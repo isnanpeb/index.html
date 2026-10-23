@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KasKelas</title>
+<style>
+:root{
+  --bg:#eef3f1; --card:#ffffff; --ink:#16302b; --muted:#5b726c;
+  --line:#cfdcd8; --accent:#0f766e; --accent-ink:#ffffff; --soft:#dcefea;
+  --err:#b42318; --ok-bg:#d9f2ea; --ok:#0b5d54; --no-bg:#fde8e4; --no:#9a2a1c;
+  --nav-h:60px; --side-w:240px;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#0e1715; --card:#16221f; --ink:#e6f0ed; --muted:#93aaa4;
+    --line:#2b3d39; --accent:#2dd4bf; --accent-ink:#06201c; --soft:#173a35;
+    --err:#ff8a80; --ok-bg:#12403a; --ok:#7ee8d6; --no-bg:#4a211b; --no:#ffb4a8; }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);line-height:1.6;
+  font-family:"Segoe UI",system-ui,-apple-system,Roboto,sans-serif;
+  min-height:100vh;display:flex;flex-direction:column}
+a{color:inherit;text-decoration:none}
+a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+[hidden]{display:none!important}
+
+.navbar{position:sticky;top:0;z-index:20;height:var(--nav-h);background:var(--card);
+  border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;padding:0 20px}
+.logo{font-weight:700;font-size:1.15rem;letter-spacing:-.01em}
+.kelas{color:var(--muted);font-size:.92rem;padding-left:12px;border-left:1px solid var(--line)}
+.kelas:empty{display:none}
+.spacer{flex:1}
+.burger{display:none;border:1px solid var(--line);background:var(--card);color:var(--ink);
+  border-radius:8px;padding:6px 10px;font:inherit;cursor:pointer}
+.user{display:flex;align-items:center;gap:10px;font-size:.92rem}
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--accent);color:var(--accent-ink);
+  display:grid;place-items:center;font-weight:700;font-size:.85rem}
+.logout{border:1px solid var(--line);border-radius:8px;padding:6px 12px;font:inherit;font-size:.88rem;
+  background:var(--card);color:var(--ink);cursor:pointer}
+.navbar .btn{padding:6px 16px;font-size:.9rem}
+
+.body{flex:1;display:flex}
+.sidebar{width:var(--side-w);background:var(--card);border-right:1px solid var(--line);padding:16px 12px;
+  position:sticky;top:var(--nav-h);height:calc(100vh - var(--nav-h));overflow-y:auto}
+.sidebar a{display:block;padding:10px 12px;border-radius:10px;color:var(--muted);font-weight:500;margin-bottom:2px;cursor:pointer}
+.sidebar a:hover{background:var(--bg);color:var(--ink)}
+.sidebar a[aria-current="page"]{background:var(--soft);color:var(--accent);font-weight:700}
+.sidebar hr{border:0;border-top:1px solid var(--line);margin:12px 4px}
+.main{flex:1;min-width:0;display:flex;flex-direction:column}
+.content{flex:1;padding:28px;max-width:960px;width:100%}
+.content h1{margin:0 0 4px;font-size:1.6rem;letter-spacing:-.015em}
+.content h2{font-size:1.1rem;margin:28px 0 12px}
+.desc{margin:0 0 22px;color:var(--muted)}
+.slot{border:2px dashed var(--line);border-radius:12px;padding:32px 20px;text-align:center;color:var(--muted)}
+
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:16px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.stat small{color:var(--muted)}
+.stat strong{display:block;font-size:1.35rem}
+.quick,.toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.toolbar{margin-bottom:16px}
+.toolbar input{width:auto}
+
+.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px}
+.panel h2{margin:0 0 4px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:0 16px}
+label{display:block;font-size:.88rem;font-weight:600;margin:14px 0 6px}
+input,textarea,select{width:100%;padding:10px 12px;font:inherit;color:var(--ink);background:var(--card);
+  border:1px solid var(--line);border-radius:10px}
+input[type=file]{padding:8px}
+.preview{display:block;max-width:220px;max-height:180px;margin-top:10px;border-radius:10px;border:1px solid var(--line)}
+.err{color:var(--err);font-size:.85rem;min-height:1.2em;margin:10px 0 0}
+.btn{display:inline-block;padding:10px 18px;border-radius:10px;font:inherit;font-weight:600;cursor:pointer;
+  border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink)}
+.btn.ghost{background:var(--card);color:var(--ink);border-color:var(--line)}
+.btn.danger{background:var(--card);color:var(--err);border-color:var(--err)}
+
+.tablewrap{overflow-x:auto;background:var(--card);border:1px solid var(--line);border-radius:12px}
+table{width:100%;border-collapse:collapse;min-width:520px}
+th,td{padding:10px 14px;text-align:left;border-top:1px solid var(--line);font-size:.92rem;vertical-align:top}
+thead th{border-top:0;color:var(--muted);font-size:.8rem;font-weight:600}
+.r{text-align:right}
+td small{display:block;color:var(--muted)}
+.chip{display:inline-block;padding:1px 10px;border-radius:99px;font-size:.78rem;font-weight:600}
+.chip.masuk{background:var(--ok-bg);color:var(--ok)}
+.chip.keluar{background:var(--no-bg);color:var(--no)}
+.link{border:0;background:none;color:var(--accent);font:inherit;font-size:.88rem;cursor:pointer;padding:0}
+.link.del{color:var(--err)}
+
+dialog{border:1px solid var(--line);border-radius:14px;background:var(--card);color:var(--ink);
+  padding:16px;max-width:min(92vw,560px)}
+dialog::backdrop{background:rgba(0,0,0,.4);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+dialog img{display:block;max-width:100%;max-height:70vh;margin:0 auto 12px;border-radius:8px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:var(--bg);
+  padding:10px 18px;border-radius:10px;font-size:.92rem;z-index:40}
+
+footer{border-top:1px solid var(--line);background:var(--card);padding:16px 28px;
+  display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;font-size:.88rem;color:var(--muted)}
+footer nav{display:flex;gap:16px}
+
+.scrim{display:none}
+@media (max-width:820px){
+  .burger{display:block}
+  .user span{display:none}
+  .kelas{display:none}
+  .sidebar{position:fixed;left:0;top:var(--nav-h);z-index:15;transform:translateX(-100%);
+    transition:transform .2s;height:calc(100% - var(--nav-h))}
+  body.open .sidebar{transform:none}
+  body.open .scrim{display:block;position:fixed;inset:var(--nav-h) 0 0 0;background:rgba(0,0,0,.4);z-index:12}
+  .content{padding:20px 16px}
+  .grid{grid-template-columns:1fr}
+}
+@media print{
+  .navbar,.sidebar,footer,.noprint,.toast,.scrim,.del{display:none!important}
+  .content{padding:0;max-width:none}
+}
+@media (prefers-reduced-motion:reduce){.sidebar{transition:none}}
+
+/* ---------- Jendela masuk / daftar ---------- */
+#dlg-login{width:min(92vw,400px);padding:20px}
+#dlg-login .btn{margin-top:14px;margin-right:8px}
+.tabs{display:flex;border-bottom:1px solid var(--line);margin-bottom:4px}
+.tabs button{flex:1;padding:10px;border:0;border-bottom:2px solid transparent;margin-bottom:-1px;
+  background:none;font:inherit;font-weight:600;color:var(--muted);cursor:pointer}
+.tabs button[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent)}
+
+/* ---------- Mode lihat saja ---------- */
+.notice{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 16px;
+  background:var(--soft);color:var(--ink);border:1px solid var(--line);border-radius:12px;
+  padding:12px 16px;margin-bottom:20px;font-size:.92rem}
+.notice .link{font-weight:600}
+.readonly p{margin:0}
+
+/* ---------- Jendela bantuan ---------- */
+footer nav button{border:0;background:none;color:inherit;font:inherit;padding:0;cursor:pointer}
+footer nav button:hover{color:var(--ink)}
+#dlg-bantuan{width:min(92vw,360px);padding:20px}
+.dlg-title{margin:0 0 4px;font-size:1.15rem}
+.dlg-desc{margin:0 0 14px;color:var(--muted);font-size:.92rem}
+.kontak small{display:block;color:var(--muted);font-size:.8rem;margin-top:10px}
+.kontak strong{display:block;font-size:1.05rem}
+.kontak .wa{margin-top:4px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;
+  background:var(--bg);font-size:1.05rem;letter-spacing:.02em}
+#dlg-bantuan .btn{margin-top:16px}
+
+
+/* ---------- Jendela kebijakan privasi ---------- */
+#dlg-privasi{width:min(92vw,560px);padding:20px}
+#dlg-privasi .dlg-desc{margin-bottom:10px}
+.dlg-scroll{max-height:60vh;overflow-y:auto;padding:0 8px 0 0;font-size:.92rem}
+.dlg-scroll h3{margin:18px 0 6px;font-size:.98rem}
+.dlg-scroll h3:first-child{margin-top:0}
+.dlg-scroll p{margin:0 0 8px}
+.dlg-scroll ul{margin:0 0 8px;padding-left:20px}
+.dlg-scroll li{margin-bottom:4px}
+#dlg-privasi .btn{margin-top:16px}
+</style>
+</head>
+<body>
+
+<!-- ===== NAVBAR ===== -->
+<header class="navbar">
+  <button class="burger" id="burger" aria-label="Buka menu" aria-expanded="false">Menu</button>
+  <a class="logo" href="#dashboard">KasKelas</a>
+  <span class="kelas" id="kelas"></span>
+  <div class="spacer"></div>
+  <div class="user" id="user" hidden><div class="avatar" id="avatar" aria-hidden="true"></div><span id="uname"></span></div>
+  <button class="logout" id="logout" type="button" hidden>Keluar</button>
+  <button class="btn" id="login-btn" type="button">Masuk</button>
+</header>
+
+<div class="body">
+  <!-- ===== MENU SAMPING ===== -->
+  <aside class="sidebar" aria-label="Menu utama">
+    <a href="#dashboard" data-v="dashboard">Dashboard</a>
+    <a href="#siswa" data-v="siswa">Data siswa</a>
+    <a href="#iuran" data-v="iuran">Iuran masuk</a>
+    <a href="#pengeluaran" data-v="pengeluaran">Pengeluaran</a>
+    <a href="#laporan" data-v="laporan">Laporan</a>
+    <hr class="bendahara-only" hidden>
+    <a class="bendahara-only" href="#pengaturan" data-v="pengaturan" hidden>Pengaturan</a>
+  </aside>
+  <div class="scrim" id="scrim"></div>
+
+  <div class="main">
+    <main class="content" id="content"></main>
+    <!-- ===== FOOTER ===== -->
+    <footer>
+      <span>© 2026 KasKelas</span>
+      <nav aria-label="Tautan footer"><button type="button" id="bantuan-btn">Bantuan</button><button type="button" id="privasi-btn">Kebijakan privasi</button></nav>
+    </footer>
+  </div>
+</div>
+
+<dialog id="dlg">
+  <img id="dlg-img" alt="Bukti">
+  <button class="btn ghost" id="dlg-x" type="button">Tutup</button>
+</dialog>
+<dialog id="dlg-bantuan" aria-label="Bantuan">
+  <h2 class="dlg-title">Bantuan</h2>
+  <p class="dlg-desc">Hubungi bendahara kelas jika ada pertanyaan.</p>
+  <div class="kontak">
+    <small>Bendahara</small>
+    <strong id="b-nama"></strong>
+    <small>Nomor WhatsApp</small>
+    <div class="wa" id="b-wa"></div>
+  </div>
+  <button class="btn ghost" id="bantuan-x" type="button">Tutup</button>
+</dialog>
+<dialog id="dlg-privasi" aria-label="Kebijakan privasi">
+  <h2 class="dlg-title">Kebijakan Privasi KasKelas</h2>
+  <p class="dlg-desc">Terakhir diperbarui: 23 Oktober 2026</p>
+  <div class="dlg-scroll">
+    <h3>1. Tentang aplikasi</h3>
+    <p>KasKelas adalah aplikasi pencatatan kas kelas. Aplikasi ini membantu bendahara mencatat iuran masuk, pengeluaran, dan daftar siswa, serta membuat laporan kas.</p>
+
+    <h3>2. Data yang kami simpan</h3>
+    <ul>
+      <li><strong>Data akun:</strong> nama lengkap, username, dan password yang disimpan dalam bentuk terenkripsi (hash), bukan teks asli.</li>
+      <li><strong>Data kas:</strong> tanggal, nama siswa atau keperluan, jumlah uang, keterangan, dan foto bukti pembayaran atau nota.</li>
+      <li><strong>Data kelas:</strong> nama kelas, nama bendahara, besar iuran, dan nomor WhatsApp bendahara.</li>
+      <li><strong>Daftar siswa:</strong> nama anggota kelas yang dimasukkan oleh bendahara.</li>
+    </ul>
+
+    <h3>3. Tempat penyimpanan data</h3>
+    <p>Seluruh data disimpan di penyimpanan lokal (<em>local storage</em>) pada browser perangkat yang digunakan. Data tidak dikirim ke server mana pun dan tidak dibagikan kepada pihak ketiga. Akibatnya, data hanya dapat diakses dari browser dan perangkat yang sama.</p>
+
+    <h3>4. Tujuan penggunaan data</h3>
+    <p>Data hanya digunakan untuk mencatat kas kelas, menampilkan saldo dan riwayat transaksi, membuat laporan, dan menampilkan kontak bendahara di menu Bantuan.</p>
+
+    <h3>5. Hak akses</h3>
+    <ul>
+      <li>Pengunjung yang belum masuk hanya dapat melihat data.</li>
+      <li>Hanya bendahara yang sudah masuk yang dapat menambah, mengubah, atau menghapus data.</li>
+    </ul>
+
+    <h3>6. Nomor WhatsApp</h3>
+    <p>Nomor WhatsApp bendahara ditampilkan di menu Bantuan agar anggota kelas dapat menghubungi bendahara. Nomor ini bersifat opsional dan dapat diubah atau dikosongkan kapan saja di menu Pengaturan.</p>
+
+    <h3>7. Keamanan</h3>
+    <p>Password disimpan dalam bentuk hash. Karena data berada di browser, kami menyarankan pengguna untuk:</p>
+    <ul>
+      <li>tidak memakai password yang sama dengan akun penting lainnya,</li>
+      <li>tidak membagikan password kepada orang lain,</li>
+      <li>keluar dari akun setelah selesai, terutama di komputer bersama,</li>
+      <li>membuat cadangan laporan dengan fitur cetak secara berkala.</li>
+    </ul>
+
+    <h3>8. Penghapusan data</h3>
+    <p>Bendahara dapat menghapus catatan transaksi dan data siswa kapan saja lewat aplikasi. Seluruh data juga akan hilang jika data browser dibersihkan.</p>
+
+    <h3>9. Perubahan kebijakan</h3>
+    <p>Kebijakan ini dapat diperbarui sewaktu-waktu. Tanggal pembaruan terakhir tertera di bagian atas jendela ini.</p>
+
+    <h3>10. Kontak</h3>
+    <p>Pertanyaan tentang kebijakan ini dapat disampaikan kepada bendahara kelas melalui menu Bantuan.</p>
+  </div>
+  <button class="btn ghost" id="privasi-x" type="button">Tutup</button>
+</dialog>
+<dialog id="dlg-login" aria-label="Masuk atau daftar">
+  <div class="tabs" role="tablist">
+    <button type="button" role="tab" data-tab="masuk" aria-selected="true">Masuk</button>
+    <button type="button" role="tab" data-tab="daftar" aria-selected="false">Daftar</button>
+  </div>
+
+  <form id="form-masuk" novalidate>
+    <label for="m-user">Username</label>
+    <input id="m-user" type="text" autocomplete="username" placeholder="budi_s">
+    <label for="m-pass">Password</label>
+    <input id="m-pass" type="password" autocomplete="current-password">
+    <p class="err" id="m-err" role="alert"></p>
+    <button class="btn" type="submit">Masuk</button>
+    <button class="btn ghost" type="button" data-tutup>Batal</button>
+  </form>
+
+  <form id="form-daftar" novalidate hidden>
+    <label for="d-nama">Nama lengkap</label>
+    <input id="d-nama" type="text" autocomplete="name" placeholder="Budi Santoso">
+    <label for="d-user">Username</label>
+    <input id="d-user" type="text" autocomplete="username" placeholder="budi_s">
+    <label for="d-pass">Password (minimal 6 karakter)</label>
+    <input id="d-pass" type="password" autocomplete="new-password">
+    <label for="d-pass2">Ulangi password</label>
+    <input id="d-pass2" type="password" autocomplete="new-password">
+    <p class="err" id="d-err" role="alert"></p>
+    <button class="btn" type="submit">Daftar</button>
+    <button class="btn ghost" type="button" data-tutup>Batal</button>
+  </form>
+</dialog>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+const $ = id => document.getElementById(id);
+const rupiah = n => "Rp " + new Intl.NumberFormat("id-ID").format(n);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const today = () => new Date().toISOString().slice(0,10);
+const fmtDate = d => new Date(d + "T00:00:00").toLocaleDateString("id-ID",{day:"numeric",month:"short",year:"numeric"});
+const sum = a => a.reduce((s,t) => s + t.jumlah, 0);
+
+const pages = {
+  dashboard:["Dashboard","Ringkasan kas kelas Anda."],
+  siswa:["Data siswa","Kelola daftar anggota kelas."],
+  iuran:["Iuran masuk","Catat pemasukan kas dan unggah bukti pembayaran."],
+  pengeluaran:["Pengeluaran","Catat uang kas yang terpakai dan unggah notanya."],
+  laporan:["Laporan","Rekap pemasukan dan pengeluaran kas."],
+  pengaturan:["Pengaturan","Atur nama kelas, bendahara, dan besar iuran."]
+};
+
+/* ---------- Data (disimpan di browser) ---------- */
+const KT = "kaskelas_transaksi", KS = "kaskelas_siswa", KP = "kaskelas_pengaturan", KL = "kaskelas_login";
+const load = (k, f) => { try { const v = JSON.parse(localStorage.getItem(k)); return v == null ? f : v; } catch (e) { return f; } };
+const store = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } };
+let tx = load(KT, []), siswa = load(KS, []), set = load(KP, { kelas:"", bendahara:"", iuran:0, periode:"Bulanan" });
+let login = load(KL, null);
+let view = "dashboard", bulan = "";
+
+function applySettings(){
+  $("kelas").textContent = set.kelas || "";
+  const nama = login || "";
+  $("user").hidden = !login;
+  $("logout").hidden = !login;
+  $("login-btn").hidden = !!login;
+  $("uname").textContent = nama;
+  $("avatar").textContent = nama.charAt(0).toUpperCase();
+  document.querySelectorAll(".bendahara-only").forEach(el => { el.hidden = !login; });
+}
+
+function compress(file){
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onerror = reject;
+    r.onload = () => {
+      const img = new Image();
+      img.onerror = reject;
+      img.onload = () => {
+        const k = Math.min(1, 900 / Math.max(img.width, img.height));
+        const c = document.createElement("canvas");
+        c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+        c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+        resolve(c.toDataURL("image/jpeg", 0.72));
+      };
+      img.src = r.result;
+    };
+    r.readAsDataURL(file);
+  });
+}
+
+function toast(msg){
+  const t = $("toast"); t.textContent = msg; t.hidden = false;
+  clearTimeout(toast.id); toast.id = setTimeout(() => t.hidden = true, 2200);
+}
+const fail = m => { $("err").textContent = m; };
+
+/* ---------- Potongan tampilan ---------- */
+function statsHTML(rows){
+  const m = sum(rows.filter(t => t.type === "masuk")), k = sum(rows.filter(t => t.type === "keluar"));
+  return `<div class="stats">
+    <div class="stat"><small>Saldo kas</small><strong>${rupiah(m - k)}</strong></div>
+    <div class="stat"><small>Total pemasukan</small><strong>${rupiah(m)}</strong></div>
+    <div class="stat"><small>Total pengeluaran</small><strong>${rupiah(k)}</strong></div></div>`;
+}
+
+function viewOnlyHTML(){
+  return `<div class="notice noprint" role="note">
+    <span>Mode lihat saja. Hanya bendahara yang dapat menambah, mengubah, atau menghapus data.</span>
+    <button class="link" type="button" data-masuk>Masuk sebagai bendahara</button></div>`;
+}
+
+function txFormHTML(type){
+  const masuk = type === "masuk";
+  const opts = siswa.map(s => `<option value="${esc(s.nama)}"></option>`).join("");
+  return `<form class="panel" id="form" novalidate>
+    <h2>${masuk ? "Catat iuran masuk" : "Catat pengeluaran"}</h2>
+    <div class="grid">
+      <div><label for="tgl">Tanggal</label><input id="tgl" type="date" value="${today()}"></div>
+      <div><label for="nama">${masuk ? "Nama siswa" : "Keperluan"}</label>
+        <input id="nama" type="text" ${masuk ? 'list="dsiswa"' : ""} placeholder="${masuk ? "Pilih atau ketik nama" : "Beli spidol dan penghapus"}">
+        ${masuk ? `<datalist id="dsiswa">${opts}</datalist>` : ""}</div>
+      <div><label for="jumlah">Jumlah (Rp)</label>
+        <input id="jumlah" type="number" min="1" step="500" inputmode="numeric" value="${masuk && set.iuran ? set.iuran : ""}" placeholder="10000"></div>
+      <div><label for="ket">Keterangan (opsional)</label>
+        <input id="ket" type="text" placeholder="${masuk ? "Iuran minggu ke-2" : "Untuk kebutuhan piket"}"></div>
+    </div>
+    <label for="bukti">${masuk ? "Bukti pembayaran" : "Bukti nota / kwitansi"} (foto, opsional)</label>
+    <input id="bukti" type="file" accept="image/*">
+    <img id="preview" class="preview" alt="Pratinjau bukti" hidden>
+    <p class="err" id="err" role="alert"></p>
+    <button class="btn" type="submit">Simpan</button>
+  </form>`;
+}
+
+function listHTML(rows, showType){
+  if (!rows.length) return `<div class="slot">Belum ada data.</div>`;
+  const edit = !!login;
+  const head = `<tr><th>Tanggal</th>${showType ? "<th>Jenis</th>" : ""}<th>Keterangan</th><th class="r">Jumlah</th><th>Bukti</th>${edit ? '<th class="del"></th>' : ""}</tr>`;
+  const body = rows.map(t => `<tr>
+    <td>${fmtDate(t.tgl)}</td>
+    ${showType ? `<td><span class="chip ${t.type}">${t.type === "masuk" ? "Masuk" : "Keluar"}</span></td>` : ""}
+    <td>${esc(t.nama)}${t.ket ? `<small>${esc(t.ket)}</small>` : ""}</td>
+    <td class="r">${t.type === "keluar" ? "−" : "+"}${rupiah(t.jumlah)}</td>
+    <td>${t.bukti ? `<button class="link" data-lihat="${t.id}">Lihat</button>` : "–"}</td>
+    ${edit ? `<td class="del"><button class="link del" data-hapus="${t.id}">Hapus</button></td>` : ""}</tr>`).join("");
+  return `<div class="tablewrap"><table><thead>${head}</thead><tbody>${body}</tbody></table></div>`;
+}
+
+function siswaHTML(){
+  const list = [...siswa].sort((a,b) => a.nama.localeCompare(b.nama, "id"));
+  const paid = n => sum(tx.filter(t => t.type === "masuk" && t.nama.trim().toLowerCase() === n.toLowerCase()));
+  const table = !list.length ? `<div class="slot">Belum ada siswa. Tambahkan nama di formulir atas.</div>` :
+    `<div class="tablewrap"><table><thead><tr><th>No</th><th>Nama</th><th class="r">Total iuran dibayar</th>${login ? "<th></th>" : ""}</tr></thead><tbody>` +
+    list.map((s,i) => `<tr><td>${i+1}</td><td>${esc(s.nama)}</td><td class="r">${rupiah(paid(s.nama))}</td>
+      ${login ? `<td><button class="link del" data-hapus-siswa="${s.id}">Hapus</button></td>` : ""}</tr>`).join("") + `</tbody></table></div>`;
+  const form = !login ? "" : `<form class="panel" id="form" novalidate>
+    <h2>Tambah siswa</h2>
+    <label for="daftar">Nama siswa (satu nama per baris)</label>
+    <textarea id="daftar" rows="5" placeholder="Andi Pratama&#10;Bunga Lestari&#10;Citra Dewi"></textarea>
+    <p class="err" id="err" role="alert"></p>
+    <button class="btn" type="submit">Tambah</button>
+  </form>`;
+  return form + `<h2>Daftar siswa (${list.length})</h2>${table}`;
+}
+
+function settingsHTML(){
+  return `<form class="panel" id="form" novalidate>
+    <div class="grid">
+      <div><label for="kelas-in">Nama kelas</label><input id="kelas-in" type="text" value="${esc(set.kelas)}" placeholder="XI IPA 2"></div>
+      <div><label for="bend">Nama bendahara</label><input id="bend" type="text" value="${esc(set.bendahara)}" placeholder="Budi Santoso"></div>
+      <div><label for="iur">Besar iuran (Rp)</label><input id="iur" type="number" min="0" step="500" value="${set.iuran || ""}" placeholder="10000"></div>
+      <div><label for="per">Periode iuran</label>
+        <select id="per"><option${set.periode === "Mingguan" ? " selected" : ""}>Mingguan</option><option${set.periode === "Bulanan" ? " selected" : ""}>Bulanan</option></select></div>
+      <div><label for="wa-in">Nomor WhatsApp bendahara</label><input id="wa-in" type="tel" inputmode="tel" value="${esc(set.wa || "")}" placeholder="0812 3456 7890"></div>
+    </div>
+    <p class="err" id="err" role="alert"></p>
+    <button class="btn" type="submit">Simpan pengaturan</button>
+  </form>
+  <h2>Hapus data</h2>
+  <p class="desc">Menghapus semua catatan pemasukan dan pengeluaran. Daftar siswa tidak ikut terhapus.</p>
+  <button class="btn danger" id="reset" type="button">Hapus semua transaksi</button>`;
+}
+
+/* ---------- Menyambungkan form ---------- */
+function bindTxForm(type){
+  let bukti = "";
+  $("bukti").onchange = async e => {
+    const file = e.target.files[0];
+    bukti = ""; $("preview").hidden = true; fail("");
+    if (!file) return;
+    try { bukti = await compress(file); $("preview").src = bukti; $("preview").hidden = false; }
+    catch (err) { e.target.value = ""; fail("File harus berupa gambar (JPG atau PNG)."); }
+  };
+  $("form").onsubmit = e => {
+    e.preventDefault();
+    const tgl = $("tgl").value, nama = $("nama").value.trim(), jumlah = Number($("jumlah").value);
+    if (!tgl) return fail("Tanggal wajib diisi.");
+    if (nama.length < 2) return fail(type === "masuk" ? "Isi nama siswa." : "Isi keperluan pengeluaran.");
+    if (!(jumlah > 0)) return fail("Jumlah harus lebih dari 0.");
+    tx.push({ id: Date.now().toString(36), type, tgl, nama, jumlah, ket: $("ket").value.trim(), bukti });
+    if (!store(KT, tx)) { tx.pop(); return fail("Penyimpanan penuh. Hapus data lama atau gunakan foto yang lebih kecil."); }
+    render();
+    toast(type === "masuk" ? "Iuran masuk tersimpan." : "Pengeluaran tersimpan.");
+  };
+}
+
+function bindSiswaForm(){
+  $("form").onsubmit = e => {
+    e.preventDefault();
+    const ada = new Set(siswa.map(s => s.nama.toLowerCase()));
+    const baru = [];
+    $("daftar").value.split("\n").map(n => n.trim()).filter(n => n.length >= 2).forEach(n => {
+      if (!ada.has(n.toLowerCase())) { ada.add(n.toLowerCase()); baru.push({ id: Date.now().toString(36) + baru.length, nama: n }); }
+    });
+    if (!baru.length) return fail("Isi minimal satu nama baru (minimal 2 huruf).");
+    siswa = siswa.concat(baru);
+    if (!store(KS, siswa)) { siswa = siswa.slice(0, siswa.length - baru.length); return fail("Gagal menyimpan data."); }
+    render(); toast(baru.length + " siswa ditambahkan.");
+  };
+}
+
+function bindSettingsForm(){
+  $("form").onsubmit = e => {
+    e.preventDefault();
+    const wa = $("wa-in").value.trim();
+    if (wa && !/^\+?[0-9][0-9\s-]{6,18}$/.test(wa)) return fail("Nomor WhatsApp hanya boleh angka, spasi, atau tanda minus (7-19 digit).");
+    set = { kelas: $("kelas-in").value.trim(), bendahara: $("bend").value.trim(),
+            iuran: Math.max(0, Number($("iur").value) || 0), periode: $("per").value, wa };
+    if (!store(KP, set)) return fail("Gagal menyimpan pengaturan.");
+    applySettings(); toast("Pengaturan tersimpan.");
+  };
+  $("reset").onclick = () => {
+    if (confirm("Hapus SEMUA catatan pemasukan dan pengeluaran? Tindakan ini tidak bisa dibatalkan.")) {
+      tx = []; store(KT, tx); toast("Semua transaksi dihapus.");
+    }
+  };
+}
+
+/* ---------- Render halaman ---------- */
+function render(){
+  if (view === "pengaturan" && !login) {
+    view = "dashboard";
+    try { history.replaceState(null, "", "#dashboard"); } catch (e) {}
+  }
+  const [title, desc] = pages[view];
+  document.querySelectorAll(".sidebar a").forEach(a =>
+    a.dataset.v === view ? a.setAttribute("aria-current","page") : a.removeAttribute("aria-current"));
+
+  const all = [...tx].sort((a,b) => b.tgl.localeCompare(a.tgl));
+  let body = "";
+  if (view === "dashboard") {
+    body = statsHTML(all) + (login ? `<div class="quick">
+      <a class="btn" href="#iuran">+ Catat iuran masuk</a>
+      <a class="btn ghost" href="#pengeluaran">+ Catat pengeluaran</a></div>` : "") +
+      `<h2>Transaksi terbaru</h2>` + listHTML(all.slice(0,5), true);
+  } else if (view === "siswa") {
+    body = siswaHTML();
+  } else if (view === "iuran") {
+    body = (login ? txFormHTML("masuk") : "") + `<h2>Riwayat iuran masuk</h2>` + listHTML(all.filter(t => t.type === "masuk"), false);
+  } else if (view === "pengeluaran") {
+    body = (login ? txFormHTML("keluar") : "") + `<h2>Riwayat pengeluaran</h2>` + listHTML(all.filter(t => t.type === "keluar"), false);
+  } else if (view === "laporan") {
+    const rows = bulan ? all.filter(t => t.tgl.startsWith(bulan)) : all;
+    body = `<div class="toolbar noprint">
+        <label for="bulan" style="margin:0">Bulan</label>
+        <input id="bulan" type="month" value="${bulan}">
+        <button class="btn ghost" id="semua" type="button">Semua</button>
+        <button class="btn" id="cetak" type="button">Cetak</button></div>` + statsHTML(rows) + listHTML(rows, true);
+  } else {
+    body = settingsHTML();
+  }
+
+  $("content").innerHTML = `<h1>${title}</h1><p class="desc">${desc}</p>${login ? "" : viewOnlyHTML()}${body}`;
+  if (login && view === "iuran") bindTxForm("masuk");
+  if (login && view === "pengeluaran") bindTxForm("keluar");
+  if (login && view === "siswa") bindSiswaForm();
+  if (login && view === "pengaturan") bindSettingsForm();
+  if (view === "laporan") {
+    $("bulan").onchange = e => { bulan = e.target.value; render(); };
+    $("semua").onclick = () => { bulan = ""; render(); };
+    $("cetak").onclick = () => window.print();
+  }
+  document.title = title + " – KasKelas";
+  setMenu(false);
+}
+
+function go(v){
+  view = pages[v] ? v : "dashboard";
+  try { history.replaceState(null, "", "#" + view); } catch (e) {}
+  render();
+  window.scrollTo(0, 0);
+}
+
+/* ---------- Interaksi ---------- */
+document.addEventListener("click", e => {
+  const a = e.target.closest("a[href^='#']");
+  if (a && a.getAttribute("href").length > 1) { e.preventDefault(); go(a.getAttribute("href").slice(1)); return; }
+  if (e.target.closest("[data-masuk]")) { bukaLogin("masuk"); return; }
+
+  const lihat = e.target.closest("[data-lihat]"), hapus = e.target.closest("[data-hapus]"),
+        hs = e.target.closest("[data-hapus-siswa]");
+  if (lihat) {
+    const t = tx.find(x => x.id === lihat.dataset.lihat);
+    if (t) { $("dlg-img").src = t.bukti; $("dlg").showModal(); }
+  } else if (hapus && login && confirm("Hapus catatan ini?")) {
+    tx = tx.filter(x => x.id !== hapus.dataset.hapus);
+    store(KT, tx); render(); toast("Catatan dihapus.");
+  } else if (hs && login && confirm("Hapus siswa ini? Catatan iurannya tidak ikut terhapus.")) {
+    siswa = siswa.filter(x => x.id !== hs.dataset.hapusSiswa);
+    store(KS, siswa); render(); toast("Siswa dihapus.");
+  }
+});
+$("dlg-x").onclick = () => $("dlg").close();
+
+const burger = $("burger");
+function setMenu(open){
+  document.body.classList.toggle("open", open);
+  burger.setAttribute("aria-expanded", open);
+}
+burger.onclick = () => setMenu(!document.body.classList.contains("open"));
+$("scrim").onclick = () => setMenu(false);
+addEventListener("hashchange", () => go(location.hash.slice(1)));
+
+/* ---------- Akun: daftar, masuk, keluar ---------- */
+const KU = "kaskelas_akun";
+let akun = load(KU, []);
+
+async function hash(teks){
+  try {
+    const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode("kaskelas:" + teks));
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
+  } catch (e) {
+    let h = 5381;
+    for (const c of "kaskelas:" + teks) h = ((h << 5) + h + c.charCodeAt(0)) | 0;
+    return "x" + h;
+  }
+}
+
+function pilihTab(t){
+  $("form-masuk").hidden = t !== "masuk";
+  $("form-daftar").hidden = t !== "daftar";
+  document.querySelectorAll("#dlg-login [data-tab]").forEach(b =>
+    b.setAttribute("aria-selected", b.dataset.tab === t));
+  $(t === "masuk" ? "m-user" : "d-nama").focus();
+}
+
+function bukaLogin(tab){
+  $("form-masuk").reset(); $("form-daftar").reset();
+  $("m-err").textContent = ""; $("d-err").textContent = "";
+  $("dlg-login").showModal();
+  pilihTab(tab);
+}
+
+function berhasilMasuk(nama){
+  login = nama;
+  store(KL, login);
+  $("dlg-login").close();
+  applySettings();
+  render();
+  toast("Berhasil masuk sebagai " + nama + ".");
+}
+
+$("login-btn").onclick = () => bukaLogin("masuk");
+document.querySelectorAll("#dlg-login [data-tab]").forEach(b => b.onclick = () => pilihTab(b.dataset.tab));
+document.querySelectorAll("#dlg-login [data-tutup]").forEach(b => b.onclick = () => $("dlg-login").close());
+
+$("form-masuk").onsubmit = async e => {
+  e.preventDefault();
+  const u = $("m-user").value.trim().toLowerCase(), p = $("m-pass").value;
+  if (!u || !p) { $("m-err").textContent = "Isi username dan password."; return; }
+  const a = akun.find(x => x.user === u);
+  if (!a || a.hash !== await hash(p)) { $("m-err").textContent = "Username atau password salah."; return; }
+  berhasilMasuk(a.nama);
+};
+
+$("form-daftar").onsubmit = async e => {
+  e.preventDefault();
+  const nama = $("d-nama").value.trim(), u = $("d-user").value.trim().toLowerCase(),
+        p = $("d-pass").value, p2 = $("d-pass2").value, err = m => { $("d-err").textContent = m; };
+  if (nama.length < 2) return err("Isi nama lengkap (minimal 2 huruf).");
+  if (!/^[a-z0-9_.]{3,20}$/.test(u)) return err("Username 3-20 karakter: huruf, angka, titik, atau garis bawah.");
+  if (p.length < 6) return err("Password minimal 6 karakter.");
+  if (p !== p2) return err("Konfirmasi password tidak sama.");
+  if (akun.some(x => x.user === u)) return err("Username sudah dipakai.");
+  akun.push({ user: u, nama, hash: await hash(p) });
+  if (!store(KU, akun)) { akun.pop(); return err("Gagal menyimpan akun."); }
+  berhasilMasuk(nama);
+};
+
+$("logout").onclick = () => {
+  login = null;
+  try { localStorage.removeItem(KL); } catch (e) {}
+  applySettings();
+  render();
+  toast("Anda sudah keluar.");
+};
+
+/* ---------- Bantuan ---------- */
+$("bantuan-btn").onclick = () => {
+  $("b-nama").textContent = set.bendahara || "Belum diisi";
+  $("b-wa").textContent = set.wa || "Belum diisi";
+  $("dlg-bantuan").showModal();
+};
+$("bantuan-x").onclick = () => $("dlg-bantuan").close();
+
+/* ---------- Kebijakan privasi ---------- */
+$("privasi-btn").onclick = () => { $("dlg-privasi").showModal(); $("dlg-privasi").querySelector(".dlg-scroll").scrollTop = 0; };
+$("privasi-x").onclick = () => $("dlg-privasi").close();
+
+applySettings();
+go(location.hash.slice(1));
+</script>
+</body>
+</html>
